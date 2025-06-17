@@ -1,0 +1,32 @@
+name: Prueba Actions
+
+on:
+  schedule:
+    - cron: '0 12 * * 1-5'
+    - cron: '30 21 * * 1-5'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.12' # Especifica tu versión de Python si es necesario
+    
+    - name: Instalar dependencias
+      run: pip install -r requirements.txt
+        
+    - name: Run automatizacion
+      env:
+        GMAIL_USER: ${{ secrets.GMAIL_USER }}
+        GMAIL_PASSWORD: ${{ secrets.GMAIL_PASSWORD }}
+        GMAIL_DESTINATION: ${{ secrets.GMAIL_DESTINATION }}
+        TGM_TOKEN: ${{ secrets.TGM_TOKEN }}
+        TGM_CHAT_ID: ${{ secrets.TGM_CHAT_ID }}
+        USER_AUTOMATION: ${{ secrets.USER_AUTOMATION }}
+        PASSWORD_AUTOMATION: ${{ secrets.PASSWORD_AUTOMATION }}
+        URL_AUTOMATION: ${{ secrets.URL_AUTOMATION }}
+      run: python main.py
