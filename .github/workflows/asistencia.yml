@@ -1,0 +1,23 @@
+name: Prueba Actions
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.12' # Especifica tu versión de Python si es necesario
+    - name: Run script
+      env:
+        GMAIL_USER: ${{ secrets.GMAIL_USER }}
+        GMAIL_PASSWORD: ${{ secrets.GMAIL_PASSWORD }}
+        GMAIL_DESTINATION: ${{ secrets.GMAIL_DESTINATION }}
+        TGM_TOKEN: ${{ secrets.TGM_TOKEN }}
+        TGM_CHAT_ID: ${{ secrets.TGM_CHAT_ID }}
+      run: python sendMail.py
