@@ -1,39 +1,55 @@
+# sendMail.py - Script para enviar un correo de notificación de asistencia y alertar por Telegram si falla
+
 # Import smtplib for the actual sending function
-import smtplib
-import datetime
-import sendTelegramAlert as tel
-import os
+import smtplib  # Librería estándar para enviar correos electrónicos
+import datetime  # Para trabajar con fechas y horas
+from datetime import timezone, timedelta  # Para manejo de zona horaria
+import sendTelegramAlert as tel  # Módulo propio para alertas por Telegram
+import os  # Para acceder a variables de entorno
+from email.message import EmailMessage  # Para construir el mensaje de correo
 
-username = os.getenv('GMAIL_USER')  
-password = os.getenv('GMAIL_PASSWORD')  
 
-destination = os.getenv('GMAIL_DESTINATION')  # Use environment variable for security
+def enviarCorreo():
+    print("Iniciando el envío del correo...")  # Mensaje informativo en consola
 
-# Import the email modules we'll need
-from email.message import EmailMessage
+    # Obtiene las credenciales y destinatario desde variables de entorno por seguridad
+    username = os.getenv('GMAIL_USER')  # Correo del remitente
+    password = os.getenv('GMAIL_PASSWORD')  # Contraseña del remitente
+    destination = os.getenv('GMAIL_DESTINATION')  # Correo del destinatario
 
-tiempo = str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-print(tiempo)
-mensaje = "Esto es una prueba" + tiempo
-msg = EmailMessage()
-msg.set_content(mensaje)
+    # Define la zona horaria (UTC-5)
+    tzone = timezone(timedelta(hours=-5))
 
-# me == the sender's email address
-# you == the recipient's email address
-msg['Subject'] = f'ESTO ES UNA PRUEBA'
-msg['From'] = username
-msg['To'] = destination
+    # Obtiene la hora actual en la zona horaria definida y la formatea
+    tiempo = str(datetime.datetime.now(tzone).strftime("%Y-%m-%d %H:%M:%S"))
+    print(tiempo)  # Muestra la hora de envío en consola
+    mensaje = "Se marcó la asistencia a las " + tiempo  # Mensaje del correo
 
-# Send the message via our own SMTP server.
-smtp_server = 'smtp.gmail.com'
-smtp_port = 587
+    # Construye el mensaje de correo
+    msg = EmailMessage()
+    msg.set_content(mensaje)
+    msg['Subject'] = f'Asistencia Marcada'  # Asunto del correo
+    msg['From'] = username  # Remitente
+    msg['To'] = destination  # Destinatario
 
-try:
-    with smtplib.SMTP(smtp_server, smtp_port) as server:
-        server.starttls()  # Encriptar conexión
-        server.login(username, password)
-        server.send_message(msg)
-        print("Correo enviado con éxito.")
-except Exception as e:
-    print(f"Error al enviar el correo: {e}")
-    tel.enviar_alerta_telegram("🚨 Fallo en el envío del correo de prueba. ¡Despierta y envíalo tú mismo!")
+    # Configuración del servidor SMTP de Gmail
+    smtp_server = 'smtp.gmail.com'
+    smtp_port = 587
+
+    try:
+        # Conexión y envío del correo
+        with smtplib.SMTP(smtp_server, smtp_port) as server:
+            server.starttls()  # Inicia conexión segura (TLS)
+            server.login(username, password)  # Autenticación
+            server.send_message(msg)  # Envía el mensaje
+            print("Correo enviado con éxito.")
+    except Exception as e:
+        # Si falla, muestra el error y envía alerta por Telegram
+        print(f"Error al enviar el correo: {e}")
+        tel.enviar_alerta_telegram('''🚨 Fallo en el envío del correo de prueba.
+                                   ¡Despierta y revisa si se marcó la asistencia!''')
+        
+if __name__ == "__main__":
+    enviarCorreo()  # Ejecuta el envío de correo al correr el script directamente
+    tel.enviar_alerta_telegram('''✅ Correo de prueba enviado con éxito.
+                                ¡Despierta y disfruta del día!''')  # Alerta de éxito por Telegram
