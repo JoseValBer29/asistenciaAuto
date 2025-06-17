@@ -1,12 +1,14 @@
-import requests
-import os
+import requests  # Librería para hacer peticiones HTTP
+import os  # Para acceder a variables de entorno
+
 
 def enviar_alerta_telegram(mensaje):
-    token = os.getenv('TGM_TOKEN')  # Use environment variable for security
-    chat_id = os.getenv('TGM_CHAT_ID')  # Use environment variable for security
-    url = f"https://api.telegram.org/bot{token}/sendMessage"
+    # Obtiene el token y chat_id de Telegram desde variables de entorno por seguridad
+    token = os.getenv('TGM_TOKEN')  # Token del bot de Telegram
+    chat_id = os.getenv('TGM_CHAT_ID')  # ID del chat de Telegram
+    url = f"https://api.telegram.org/bot{token}/sendMessage"  # URL de la API de Telegram
     data = {
-        "chat_id": chat_id,
-        "text": mensaje
+        "chat_id": chat_id,  # Destinatario del mensaje
+        "text": mensaje      # Contenido del mensaje
     }
-    requests.post(url, data=data)
+    requests.post(url, data=data)  # Envía la alerta por Telegram
